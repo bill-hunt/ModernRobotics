@@ -429,7 +429,53 @@ def ProjectToSE3 (T):
     
     return mr.RpToTrans(R,a[:3,3])
     
-                     
+def DistanceToSO3 (R):
+    """Returns a quantity describing the distance of R from the SO3 manifold
+    
+    Computes the distance from R to the SO3 manifold using the following method:
+    
+    If det(R) <= 0, return a large number. If det(R) > 0, return norm(R^T R - I).
+    
+    Example Input: 
+        np.array([[ 1.0,  0.0,   0.0  ],
+                  [ 0.0,  0.1,  -0.95 ],
+                  [ 0.0,  1.0,   0.1  ]])
+    Output:
+        0.08835
+        
+    :param R: A 3x3 matrix
+    :returns: A quantity describing the distance of R from the SO3 manifold
+    """
+    if np.linalg.det(R) > 0:
+        return np.linalg.norm(np.dot(np.transpose(R),np.array(R)) - np.identity(3))
+    else:
+        return 1000000000.
+    
+def DistanceToSE3 (T):
+    """Returns a quantity describing the distance of T from the SE3 manifold
+    
+    Computes the distance from T to the SO3 manifold using the following method:
+    
+    Compute the rotation matrix component R of T. If det(R) <= 0, return a large number.
+    If det(R) > 0, return norm(T^T T - I).
+    
+    Example Input: 
+        np.array([[ 1.0,  0.0,   0.0,   1.2 ],
+                  [ 0.0,  0.1,  -0.95,  1.5 ],
+                  [ 0.0,  1.0,   0.1,  -0.9 ],
+                  [ 0.0,  0.0,   0.0,   1.0 ]])
+    Output:
+        5.3715
+        
+    :param R: A 3x3 matrix
+    :returns: A quantity describing the distance of R from the SO3 manifold
+    """
+    if np.linalg.det(np.array(T[:3,:3])) > 0:
+        return np.linalg.norm(np.dot(np.transpose(T),np.array(T)) - np.identity(4))
+    else:
+        return 1000000000.
+    # TODO: Correct possible error in definition of functionality
+    
 '''
 *** CHAPTER 4: FORWARD KINEMATICS ***
 '''
