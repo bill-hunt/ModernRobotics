@@ -434,7 +434,7 @@ def DistanceToSO3 (R):
     
     Computes the distance from R to the SO3 manifold using the following method:
     
-    If det(R) <= 0, return a large number. If det(R) > 0, return norm(R^T R - I).
+    If det(R) <= 0, return a large number. If det(R) > 0, return norm(R^T.R - I).
     
     Example Input: 
         np.array([[ 1.0,  0.0,   0.0  ],
@@ -456,26 +456,76 @@ def DistanceToSE3 (T):
     
     Computes the distance from T to the SO3 manifold using the following method:
     
-    Compute the rotation matrix component R of T. If det(R) <= 0, return a large number.
-    If det(R) > 0, return norm(T^T T - I).
+        Compute the determinant of R, the top 3x3 submatrix of T. If det(R) <= 0, return a large number.
+        If det(R) > 0, replace the top 3x3 submatrix of T with R^T.R, and set the first three entries of
+        the fourth column of T to zero. Then return norm(T - I).
     
     Example Input: 
         np.array([[ 1.0,  0.0,   0.0,   1.2 ],
                   [ 0.0,  0.1,  -0.95,  1.5 ],
                   [ 0.0,  1.0,   0.1,  -0.9 ],
-                  [ 0.0,  0.0,   0.0,   1.0 ]])
+                  [ 0.0,  0.0,   0.1,   0.98 ]])
     Output:
-        5.3715
+        0.134931
         
-    :param R: A 3x3 matrix
+    :param R: A 4x4 matrix
     :returns: A quantity describing the distance of R from the SO3 manifold
     """
-    if np.linalg.det(np.array(T[:3,:3])) > 0:
-        return np.linalg.norm(np.dot(np.transpose(T),np.array(T)) - np.identity(4))
+    T = np.array(T)
+    if np.linalg.det(T[:3,:3]) > 0:
+        A = np.vstack([np.c_[np.dot(np.transpose(T[:3,:3]),T[:3,:3]),np.zeros((3,1))] , T[3,:]])
+        return np.linalg.norm(A - np.identity(4))
+        
     else:
         return 1000000000.
-    # TODO: Correct possible error in definition of functionality
     
+def TestIfSO3 (R):
+    """Returns true if R is close to or on the manifold SO3
+    
+    Computes the distance d from R to the SO3 manifold using the following method:
+    
+    If det(R) <= 0, d = a large number. If det(R) > 0, d = norm(R^T.R - I).
+    
+    if d is close to zero, return true. Otherwise, return false
+    
+    Example Input: 
+        np.array([[ 1.0,  0.0,   0.0  ],
+                  [ 0.0,  0.1,  -0.95 ],
+                  [ 0.0,  1.0,   0.1  ]])
+    Output:
+        False
+        
+    :param R: A 3x3 matrix
+    :returns: True if R is very close to or in SO3, false otherwise
+    """
+    return NearZero(DistanceToSO3(R))
+    
+        
+def TestIfSE3 (T):
+    """Returns true if T is close to or on the manifold SE3
+    
+    Computes the distance d from T to the SE3 manifold using the following method:
+    
+        Compute the determinant of R, the top 3x3 submatrix of T. If det(R) <= 0, d = a large number.
+        If det(R) > 0, replace the top 3x3 submatrix of T with R^T.R, and set the first three entries of
+        the fourth column of T to zero. Then d = norm(T - I).
+    
+    If d is close to zero, return true. Otherwise, return false.
+    
+    Example Input: 
+        np.array([[ 1.0,  0.0,   0.0,   1.2 ],
+                  [ 0.0,  0.1,  -0.95,  1.5 ],
+                  [ 0.0,  1.0,   0.1,  -0.9 ],
+                  [ 0.0,  0.0,   0.1,   0.98 ]])
+    Output:
+        False
+        
+    :param R: A 3x3 matrix
+    :returns: True if R is very close to or in SE3, false otherwise
+    """
+    return NearZero(DistanceToSE3(T))
+    
+        
 '''
 *** CHAPTER 4: FORWARD KINEMATICS ***
 '''
