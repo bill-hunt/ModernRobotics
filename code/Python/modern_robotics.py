@@ -406,7 +406,7 @@ def ProjectToSE3 (T):
 
     Projects a matrix T to the closest matrix
     in SE3 using singular-value decomposition (see
-    http://hades.mech.northwestern.edu/images/d/d3/AppendixE-linear-algebra-review-June23-2018.pdf).
+    http://hades.mech.northwestern.edu/index.php/Modern_Robotics_Linear_Algebra_Review).
 
     Example Input: 
     T = np.array([[ 0.675,  0.150,  0.720,  1.2],
