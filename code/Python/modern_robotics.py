@@ -371,6 +371,65 @@ Output:
                                                               T[2][3]])], 
                      [[0, 0, 0, 0]]]
 
+                     
+def ProjectToSO3 (R):
+    """Returns a projection of R into SO3
+    
+    Projects a matrix R to the closest matrix in SO3
+    using singular-value decomposition (see
+    http://hades.mech.northwestern.edu/index.php/Modern_Robotics_Linear_Algebra_Review).
+    
+    Example Input: 
+    R = np.array([[ 0.675,  0.150,  0.720],
+                  [ 0.370,  0.771, -0.511],
+                  [-0.630,  0.619,  0.472]])
+    Output:
+        np.array([[ 0.67901136,  0.14894516,  0.71885945],
+                  [ 0.37320708,  0.77319584, -0.51272279],
+                  [-0.63218672,  0.61642804,  0.46942137]])
+        
+    :param R: A matrix near SO3 to project to SO3
+    :returns: The closest matrix to R that is in SO3
+    """
+    U,s,Vh = np.linalg.svd(R)
+        
+    result = np.dot(U,Vh)
+    
+    if np.linalg.det(result) < 0:
+        result[:,np.argmin(s)] = -result[:,np.argmin(s)]
+    
+    return result
+    
+    
+def ProjectToSE3 (T):
+    """Returns a projection of T into SE3
+
+    Projects a matrix T to the closest matrix
+    in SE3 using singular-value decomposition (see
+    http://hades.mech.northwestern.edu/images/d/d3/AppendixE-linear-algebra-review-June23-2018.pdf).
+
+    Example Input: 
+    T = np.array([[ 0.675,  0.150,  0.720,  1.2],
+                  [ 0.370,  0.771, -0.511,  5.4],
+                  [-0.630,  0.619,  0.472,  3.6],
+                  [ 0.003,  0.002,  0.010,  0.9]])
+    Output:
+        np.array([[ 0.67901136,  0.14894516,  0.71885945,  1.2 ],
+                  [ 0.37320708,  0.77319584, -0.51272279,  5.4 ],
+                  [-0.63218672,  0.61642804,  0.46942137,  3.6 ],
+                  [ 0.        ,  0.        ,  0.        ,  1.  ]])
+                  
+    :param T: A 4x4 matrix to project to SE3
+    :returns: The closest matrix to T that is in SE3
+    """
+    
+    a=np.array(T)
+    
+    R = ProjectToSO3(a[:3,:3])
+    
+    return mr.RpToTrans(R,a[:3,3])
+    
+                     
 '''
 *** CHAPTER 4: FORWARD KINEMATICS ***
 '''
